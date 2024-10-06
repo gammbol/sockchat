@@ -26,15 +26,20 @@ void *get_in_addr(struct sockaddr *sa)
 int main(int argc, char *argv[])
 {
     int sockfd, numbytes;  
-    char buf[MAXDATASIZE] = "Hi there!";
     struct addrinfo hints, *servinfo, *p;
     int rv;
     char s[INET6_ADDRSTRLEN];
 
-    if (argc != 2) {
-        fprintf(stderr,"usage: client hostname\n");
+    char buf[MAXDATASIZE] = "Hi there!";
+
+
+    if (argc < 2) {
+        fprintf(stderr,"usage: client hostname [message-to-send]\n");
         exit(1);
     }
+
+    if (argc == 3) 
+      strcpy(buf, argv[2]);
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -74,13 +79,20 @@ int main(int argc, char *argv[])
     freeaddrinfo(servinfo); // all done with this structure
 
     if ((numbytes = send(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
-        perror("recv");
+        perror("send");
         exit(1);
     }
 
     buf[numbytes] = '\0';
 
-    printf("client: sent '%s'\n",buf);
+    printf("client: sent '%s'\n", buf);
+
+    if (recv(sockfd, buf, MAXDATASIZE, 0) == -1) {
+      perror("recv");
+      exit(2);
+    }
+
+    printf("client: recieved '%s'\n", buf);
 
     close(sockfd);
 
