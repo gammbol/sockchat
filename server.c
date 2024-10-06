@@ -57,16 +57,17 @@ int main(void)
 {
   int status, sockfd;
   struct addrinfo serv, *servinfo, *p;
+  int yes = 1;
 
   printf("Starting the server...\n");
 
-  memset(&serv, 0, sizeof hints);
+  memset(&serv, 0, sizeof serv);
   serv.ai_family = AF_UNSPEC;
   serv.ai_socktype = SOCK_STREAM;
   serv.ai_flags = AI_PASSIVE;
 
 
-  if ((status = addrinfo(NULL, PORT, &serv, &servinfo)) != 0) {
+  if ((status = getaddrinfo(NULL, LISTENPORT, &serv, &servinfo)) != 0) {
     fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
     exit(1);
   }
@@ -77,7 +78,7 @@ int main(void)
       continue;
     }
 
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 1, sizeof(int)) == -1) {
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
       perror("setsockopt");
       exit(2);
     }
@@ -103,12 +104,12 @@ int main(void)
     exit(4);
   }
 
-  printf("Listening on port %s\n", PORT);
+  printf("Listening on port %s\n", LISTENPORT);
 
 
   char buf[BUFSIZE];
   while (1) {
-    getmsg(buf, BUFSIZE);
+    getmsg(sockfd);
     // sendmsg(buf, BUFSIZE);
   }
   return 0;
