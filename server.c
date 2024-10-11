@@ -58,36 +58,36 @@ void send_sch(int sockfd, int out_sock, char *buf, int bufsize) {
 }
 
 void hintsInit(struct addrinfo *hints, size_t hintssize) {
-    memset(&hints, 0, hintssize);
+    memset(hints, 0, hintssize);
     hints->ai_family = AF_UNSPEC;
     hints->ai_socktype = SOCK_STREAM;
     hints->ai_flags = AI_PASSIVE;
 }
 
-int servInit(struct addrinfo *serv) {
-  int status, sockfd;
+int servInit(struct addrinfo *serv, int *sockfd) {
+  int status;
   struct addrinfo *servinfo, *p;
   int yes = 1;
 
   if ((status = getaddrinfo(NULL, LISTENPORT, serv, &servinfo)) != 0) {
     fprintf(stderr, "getaddrinfo: error: %s\n", gai_strerror(status));
-    exit(1);
+    return -1;
   }
 
   for (p = servinfo; p; p = p->ai_next) {
-    if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+    if ((*sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
       perror("socket");
       continue;
     }
 
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+    if (setsockopt(*sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
       perror("setsockopt");
-      exit(2);
+      return -1;
     }
 
-    if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+    if (bind(*sockfd, p->ai_addr, p->ai_addrlen) == -1) {
       perror("bind");
-      close(sockfd);
+      close(*sockfd);
       continue;
     }
 
@@ -101,12 +101,12 @@ int servInit(struct addrinfo *serv) {
     return -1;
   }
 
-  if (listen(sockfd, BACKLOG) == -1) {
+  if (listen(*sockfd, BACKLOG) == -1) {
       perror("listen");
-      exit(4);
+      return -1;
   }
 
-  return sockfd;
+  return 0;
 }
 
 int main(void)
@@ -123,7 +123,10 @@ int main(void)
   printf("Starting the server...\n");
   hintsInit(&serv, sizeof serv);
 
-  sockfd = servInit(&serv);
+  if (servInit(&serv, &sockfd) == -1) {
+    fprintf(stderr, "server: error while initializing the server\n");
+    return -1;
+  }
   printf("Listening on port %s\n", LISTENPORT);
 
 
