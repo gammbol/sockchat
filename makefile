@@ -1,13 +1,15 @@
 cc= gcc
 cflags= -Wall -Wextra
+server= sockchat_server/server.c
+client= sockchat_client/client.c
 
 all: server client
 
-server: server.c
-	$(cc) $(cflags) server.c -o server
+server: $(server)
+	$(cc) $(cflags) $(server) -o server
 
-client: client.c
-	$(cc) $(cflags) client.c -o client
+client: $(client)
+	$(cc) $(cflags) $(client) -o client
 
 clean:
 	rm -rf server client
