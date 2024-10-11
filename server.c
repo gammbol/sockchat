@@ -57,30 +57,20 @@ void send_sch(int sockfd, int out_sock, char *buf, int bufsize) {
     signal(SIGCHLD, waittokill);
 }
 
-int main(void)
-{
-  // server socket 
+void hintsInit(struct addrinfo *hints, size_t hintssize) {
+    memset(&hints, 0, hintssize);
+    hints->ai_family = AF_UNSPEC;
+    hints->ai_socktype = SOCK_STREAM;
+    hints->ai_flags = AI_PASSIVE;
+}
+
+int servInit(struct addrinfo *serv) {
   int status, sockfd;
-  struct addrinfo serv, *servinfo, *p;
-
-  // remote socket
-  int out_sockfd;
-  struct sockaddr_storage out_addr;
-  socklen_t out_addr_size;
-
-  // setsockopt option
+  struct addrinfo *servinfo, *p;
   int yes = 1;
 
-  printf("Starting the server...\n");
-
-  memset(&serv, 0, sizeof serv);
-  serv.ai_family = AF_UNSPEC;
-  serv.ai_socktype = SOCK_STREAM;
-  serv.ai_flags = AI_PASSIVE;
-
-
-  if ((status = getaddrinfo(NULL, LISTENPORT, &serv, &servinfo)) != 0) {
-    fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
+  if ((status = getaddrinfo(NULL, LISTENPORT, serv, &servinfo)) != 0) {
+    fprintf(stderr, "getaddrinfo: error: %s\n", gai_strerror(status));
     exit(1);
   }
 
@@ -108,14 +98,32 @@ int main(void)
 
   if (p == NULL) {
     fprintf(stderr, "server: failed to bind\n");
-    exit(3);
+    return -1;
   }
 
   if (listen(sockfd, BACKLOG) == -1) {
-    perror("listen");
-    exit(4);
+      perror("listen");
+      exit(4);
   }
 
+  return sockfd;
+}
+
+int main(void)
+{
+  // server socket 
+  int sockfd;
+  struct addrinfo serv;
+
+  // remote socket
+  int out_sockfd;
+  struct sockaddr_storage out_addr;
+  socklen_t out_addr_size;
+
+  printf("Starting the server...\n");
+  hintsInit(&serv, sizeof serv);
+
+  sockfd = servInit(&serv);
   printf("Listening on port %s\n", LISTENPORT);
 
 
