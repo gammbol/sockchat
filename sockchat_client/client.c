@@ -1,18 +1,44 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
+#include "client.h"
 
-#include <arpa/inet.h>
+int main(int argc, char *argv[])
+{
+    int sockfd, numbytes;  
+    struct addrinfo hints;
+    char buf[MAXDATASIZE] = "Hi there!";
 
-#define PORT "3690" // the port client will be connecting to 
 
-#define MAXDATASIZE 100 // max number of bytes we can get at once 
+    if (argc < 2 || argc > 3) {
+        fprintf(stderr,"usage: client hostname [message-to-send]\n");
+        exit(1);
+    }
+
+    if (argc == 3) 
+      strcpy(buf, argv[2]);
+
+    hintsInit(&hints, sizeof hints);
+    sockchatConnect(&sockfd, &hints, argv[1]);
+
+
+    if ((numbytes = send(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+        perror("send");
+        exit(1);
+    }
+
+    buf[numbytes] = '\0';
+
+    printf("client: sent '%s'\n", buf);
+
+    if (recv(sockfd, buf, MAXDATASIZE, 0) == -1) {
+      perror("recv");
+      exit(2);
+    }
+
+    printf("client: recieved '%s'\n", buf);
+
+    close(sockfd);
+
+    return 0;
+}
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -71,42 +97,3 @@ void sockchatConnect(int *sockfd, struct addrinfo *hints, char *remote)
 }
 
 
-int main(int argc, char *argv[])
-{
-    int sockfd, numbytes;  
-    struct addrinfo hints;
-    char buf[MAXDATASIZE] = "Hi there!";
-
-
-    if (argc < 2 || argc > 3) {
-        fprintf(stderr,"usage: client hostname [message-to-send]\n");
-        exit(1);
-    }
-
-    if (argc == 3) 
-      strcpy(buf, argv[2]);
-
-    hintsInit(&hints, sizeof hints);
-    sockchatConnect(&sockfd, &hints, argv[1]);
-
-
-    if ((numbytes = send(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
-        perror("send");
-        exit(1);
-    }
-
-    buf[numbytes] = '\0';
-
-    printf("client: sent '%s'\n", buf);
-
-    if (recv(sockfd, buf, MAXDATASIZE, 0) == -1) {
-      perror("recv");
-      exit(2);
-    }
-
-    printf("client: recieved '%s'\n", buf);
-
-    close(sockfd);
-
-    return 0;
-}
