@@ -1,19 +1,46 @@
-#include <arpa/inet.h>
-#include <errno.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
+#include "server.h"
 
-#define LISTENPORT "3690"
-#define BACKLOG 10
-#define BUFSIZE 1024
+int main(void)
+{
+  // server socket 
+  int sockfd;
+  struct addrinfo serv;
+
+  // remote socket
+  int out_sockfd;
+  struct sockaddr_storage out_addr;
+  socklen_t out_addr_size;
+
+  printf("Starting the server...\n");
+  hintsInit(&serv, sizeof serv);
+
+  if (servInit(&serv, &sockfd) == -1) {
+    fprintf(stderr, "server: error while initializing the server\n");
+    return -1;
+  }
+  printf("Listening on port %s\n", LISTENPORT);
+
+
+  char s[BUFSIZE];
+  char buf[BUFSIZE] = "sending a test message. hello there!";
+  while (1) {
+    if ((out_sockfd = accept(sockfd, (struct sockaddr *)&out_addr, &out_addr_size)) == -1) {
+      perror("accept");
+      continue;
+    }
+
+    inet_ntop(out_addr.ss_family,
+            get_in_addr((struct sockaddr *)&out_addr),
+            s, sizeof s);
+    printf("server: got connection from %s\n", s);
+  
+    get_sch(sockfd, out_sockfd);
+    send_sch(sockfd, out_sockfd, buf, BUFSIZE);
+
+    close(out_sockfd);
+  }
+  return 0;
+}
 
 void waittokill(int signum)
 {
@@ -109,44 +136,3 @@ int servInit(struct addrinfo *serv, int *sockfd) {
   return 0;
 }
 
-int main(void)
-{
-  // server socket 
-  int sockfd;
-  struct addrinfo serv;
-
-  // remote socket
-  int out_sockfd;
-  struct sockaddr_storage out_addr;
-  socklen_t out_addr_size;
-
-  printf("Starting the server...\n");
-  hintsInit(&serv, sizeof serv);
-
-  if (servInit(&serv, &sockfd) == -1) {
-    fprintf(stderr, "server: error while initializing the server\n");
-    return -1;
-  }
-  printf("Listening on port %s\n", LISTENPORT);
-
-
-  char s[BUFSIZE];
-  char buf[BUFSIZE] = "sending a test message. hello there!";
-  while (1) {
-    if ((out_sockfd = accept(sockfd, (struct sockaddr *)&out_addr, &out_addr_size)) == -1) {
-      perror("accept");
-      continue;
-    }
-
-    inet_ntop(out_addr.ss_family,
-            get_in_addr((struct sockaddr *)&out_addr),
-            s, sizeof s);
-    printf("server: got connection from %s\n", s);
-  
-    get_sch(sockfd, out_sockfd);
-    send_sch(sockfd, out_sockfd, buf, BUFSIZE);
-
-    close(out_sockfd);
-  }
-  return 0;
-}
