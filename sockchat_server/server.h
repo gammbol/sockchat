@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +18,7 @@
 #define LISTENPORT "3690"
 #define BACKLOG 10
 #define BUFSIZE 1024
+#define FDCOUNTINITSIZE 5
 
 // translation an ip from network to readable form
 void *get_in_addr(struct sockaddr *sa);
@@ -27,6 +29,10 @@ void send_sch(int sockfd, int out_sock, char *buf, int bufsize);
 
 // inits
 void hintsInit(struct addrinfo *hints, size_t hintssize);
-int servInit(struct addrinfo *serv, int *sockfd);
+int servInit();
+
+// pfds
+void add_to_pfds(struct pollfd *pfds[], int fd, int *fd_count, int *fd_size);
+void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
 
 #endif
