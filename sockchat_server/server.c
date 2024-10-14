@@ -73,7 +73,7 @@ int main(void)
               int dest_fd = pfds[j].fd;
 
               if (dest_fd != sockfd && pfds[j].fd != pfds[i].fd) {
-                printf("server sending '%s' to all the hosts\n", buf);
+                printf("server: sending '%s' to all the hosts\n", buf);
                 if (send(dest_fd, buf, recv_bytes, 0) == -1) {
                   perror("send");
                 }
@@ -199,4 +199,3 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count) {
   pfds[i] = pfds[*fd_count - 1];
   (*fd_count)--;
 }
-

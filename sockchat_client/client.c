@@ -28,14 +28,8 @@ int main(int argc, char *argv[])
 
     printf("client: sent '%s'\n", buf);
 
-    if (recv(sockfd, buf, MAXDATASIZE, 0) == -1) {
-      perror("recv");
-      exit(2);
-    }
+    while(1);
 
-    printf("client: recieved '%s'\n", buf);
-
-    close(sockfd);
 
     return 0;
 }
