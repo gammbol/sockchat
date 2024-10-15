@@ -2,36 +2,57 @@
 
 int main(int argc, char *argv[])
 {
-    int sockfd, numbytes;  
-    struct addrinfo hints;
-    char buf[MAXDATASIZE] = "Hi there!";
+  int sockfd, numbytes;  
+  struct addrinfo hints;
+  char buf[MAXDATASIZE];
 
 
-    if (argc < 2 || argc > 3) {
-        fprintf(stderr,"usage: client hostname [message-to-send]\n");
-        exit(1);
+  if (argc < 2 || argc > 3) {
+      fprintf(stderr,"usage: client hostname [message-to-send]\n");
+      exit(1);
+  }
+
+  if (argc == 3) 
+    strcpy(buf, argv[2]);
+
+  hintsInit(&hints, sizeof hints);
+  sockchatConnect(&sockfd, &hints, argv[1]);
+
+  struct pollfd serverpoll;
+  serverpoll.fd = sockfd;
+  serverpoll.events = POLLIN | POLLOUT;
+
+  while (1) {
+    int isPoss = poll(&serverpoll, 1, 3);
+
+    if (isPoss == -1) {
+      perror("poll");
+    } else {
+      if (serverpoll.revents & POLLIN) {
+        numbytes = recv(serverpoll.fd, buf, MAXDATASIZE, 0);
+        if (numbytes == -1) {
+          perror("recv");
+          continue;
+        } else if (numbytes == 0) {
+          fprintf(stderr, "error: server has closed the connection!\n");
+          exit(1);
+        } else {
+          printf("client: recieved from server: '%s'\n", buf);
+        }
+      } else {
+        printf("enter the message: ");
+        if (fgets(buf, MAXDATASIZE, stdin) != NULL) {
+          if (send(sockfd, buf, strlen(buf), 0) == -1)
+            perror("send");
+        } else {
+          fprintf(stderr, "client: error reading input\n");
+        }
+      }
     }
+  }
+  
 
-    if (argc == 3) 
-      strcpy(buf, argv[2]);
-
-    hintsInit(&hints, sizeof hints);
-    sockchatConnect(&sockfd, &hints, argv[1]);
-
-
-    if ((numbytes = send(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
-        perror("send");
-        exit(1);
-    }
-
-    buf[numbytes] = '\0';
-
-    printf("client: sent '%s'\n", buf);
-
-    while(1);
-
-
-    return 0;
+  return 0;
 }
 
 // get sockaddr, IPv4 or IPv6:
