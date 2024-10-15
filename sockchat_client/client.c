@@ -32,6 +32,9 @@ int main(int argc, char *argv[])
   while (1) {
     int isServerPoll;
     int isStdinPoll;
+    int bufread;
+
+    memset(buf, 0, MAXDATASIZE);
 
     isServerPoll = poll(&serverpoll, 1, -1);
 
@@ -51,12 +54,15 @@ int main(int argc, char *argv[])
       }
     } else {
       printf("enter the message: ");
+      fflush(stdout);
 
-      isStdinPoll = poll(&stdinpoll, 1, 2000);
+      isStdinPoll = poll(&stdinpoll, 1, 10000);
       if (isStdinPoll == 0) {
         printf("TIME OUT\n");
       } else {
-        if (read(0, buf, MAXDATASIZE) == 0) {
+        bufread = read(0, buf, MAXDATASIZE);
+        buf[bufread-1] = '\0';
+        if (bufread == 0) {
           fprintf(stderr, "client: error reading input\n");
         } else {
           printf("client: sending '%s'\n", buf);
