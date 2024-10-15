@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <fcntl.h>
 
 #define PORT "3690" // the port client will be connecting to 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 

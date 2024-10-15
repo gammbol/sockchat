@@ -19,38 +19,54 @@ int main(int argc, char *argv[])
   sockchatConnect(&sockfd, &hints, argv[1]);
 
   struct pollfd serverpoll;
+  struct pollfd stdinpoll;
+
+  // server
   serverpoll.fd = sockfd;
   serverpoll.events = POLLIN | POLLOUT;
 
-  while (1) {
-    int isPoss = poll(&serverpoll, 1, 3);
+  // stdin
+  stdinpoll.fd = 0;
+  stdinpoll.events = POLLIN;
 
-    if (isPoss == -1) {
+  while (1) {
+    int isServerPoll;
+    int isStdinPoll;
+
+    isServerPoll = poll(&serverpoll, 1, -1);
+
+    if (isServerPoll == -1) {
       perror("poll");
-    } else {
-      if (serverpoll.revents & POLLIN) {
-        numbytes = recv(serverpoll.fd, buf, MAXDATASIZE, 0);
-        if (numbytes == -1) {
-          perror("recv");
-          continue;
-        } else if (numbytes == 0) {
-          fprintf(stderr, "error: server has closed the connection!\n");
-          exit(1);
-        } else {
-          printf("client: recieved from server: '%s'\n", buf);
-        }
+    }
+
+    if (serverpoll.revents & POLLIN) {
+      numbytes = recv(serverpoll.fd, buf, MAXDATASIZE, 0);
+      if (numbytes == -1) {
+        perror("recv");
+      } else if (numbytes == 0) {
+        fprintf(stderr, "client: server has closed the connection\n");
+        exit(1);
       } else {
-        printf("enter the message: ");
-        if (fgets(buf, MAXDATASIZE, stdin) != NULL) {
-          if (send(sockfd, buf, strlen(buf), 0) == -1)
-            perror("send");
-        } else {
+        printf("client: recieved from server '%s'\n", buf);
+      }
+    } else {
+      printf("enter the message: ");
+
+      isStdinPoll = poll(&stdinpoll, 1, 2000);
+      if (isStdinPoll == 0) {
+        printf("TIME OUT\n");
+      } else {
+        if (read(0, buf, MAXDATASIZE) == 0) {
           fprintf(stderr, "client: error reading input\n");
+        } else {
+          printf("client: sending '%s'\n", buf);
+          if (send(serverpoll.fd, buf, MAXDATASIZE, 0) == -1) {
+            perror("send");
+          }
         }
       }
     }
   }
-  
 
   return 0;
 }
