@@ -72,7 +72,7 @@ int main(void)
             for (int j = 0; j < fd_count; j++) {
               int dest_fd = pfds[j].fd;
 
-              if (dest_fd != sockfd && pfds[j].fd != pfds[i].fd) {
+              if (dest_fd != sockfd && dest_fd != pfds[i].fd) {
                 printf("server: sending '%s' to all the hosts\n", buf);
                 if (send(dest_fd, buf, recv_bytes, 0) == -1) {
                   perror("send");
