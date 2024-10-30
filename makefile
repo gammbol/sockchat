@@ -1,6 +1,6 @@
 cc= gcc
 cflags= -Wall -Wextra
-server= sockchat_server/server.c
+server= sockchat_server/server.c sockchat_server/pfds/pfds.c
 client= sockchat_client/client.c
 
 all: server client

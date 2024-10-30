@@ -15,6 +15,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "pfds/pfds.h"
+
 #define LISTENPORT "3690"
 #define BACKLOG 10
 #define BUFSIZE 1024
@@ -34,5 +36,10 @@ int servInit();
 // pfds
 void add_to_pfds(struct pollfd *pfds[], int fd, int *fd_count, int *fd_size);
 void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
+
+// SCSs
+void SCS_connection(struct pollfd pfds[], int *fd_count, int *fd_size);
+void SCS_sendall(struct pollfd pfds[], int fd_count, char buf[], int i, int recv_bytes);
+void SCS_recv(struct pollfd pfds[], int *fd_count, int i);
 
 #endif

@@ -5,12 +5,6 @@ int main(void)
   // server socket 
   int sockfd;
 
-
-  // remote socket
-  int out_sockfd;
-  struct sockaddr_storage out_addr;
-  socklen_t out_addr_size;
-
   // initializing the server
   printf("Starting the server...\n");
   if ((sockfd = servInit()) == -1) {
@@ -29,8 +23,6 @@ int main(void)
   fd_count = 1;
 
 
-  char s[BUFSIZE];
-  char buf[BUFSIZE];
   while (1) {
     int poll_count = poll(pfds, fd_count, -1);
 
@@ -42,44 +34,9 @@ int main(void)
     for (int i = 0; i < fd_count; i++) {
       if (pfds[i].revents & POLLIN) {
         if (pfds[i].fd == sockfd) {
-          out_addr_size = sizeof out_addr;
-          out_sockfd = accept(sockfd,
-            (struct sockaddr *)&out_addr,
-            &out_addr_size);
-
-          if (out_sockfd == -1) {
-            perror("accept");
-          } else {
-            add_to_pfds(&pfds, out_sockfd, &fd_count, &fd_size);
-
-            inet_ntop(out_addr.ss_family,
-            get_in_addr((struct sockaddr *)&out_addr),
-            s, sizeof s);
-            printf("server: got connection from %s\n", s);
-          }
+          SCS_connection(pfds, &fd_count, &fd_size);
         } else {
-          int recv_bytes = recv(pfds[i].fd, buf, BUFSIZE, 0);
-
-          if (recv_bytes <= 0) {
-            if (recv_bytes == 0) {
-              printf("server: connection %d was closed by the client\n", pfds[i].fd);
-            } else {
-              perror("recv");
-            }
-            close(pfds[i].fd);
-            del_from_pfds(pfds, i, &fd_count);
-          } else {
-            for (int j = 0; j < fd_count; j++) {
-              int dest_fd = pfds[j].fd;
-
-              if (dest_fd != sockfd && pfds[j].fd != pfds[i].fd) {
-                printf("server: sending '%s' to all the hosts\n", buf);
-                if (send(dest_fd, buf, recv_bytes, 0) == -1) {
-                  perror("send");
-                }
-              }
-            }
-          }
+          SCS_recv(pfds, &fd_count, i);
         }
       }
     }
@@ -98,35 +55,6 @@ void *get_in_addr(struct sockaddr *sa)
         return &(((struct sockaddr_in*)sa)->sin_addr);
 
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
-
-void get_sch(int sockfd, int in_sock) {
-  char buf[BUFSIZE];
-
-  
-  if (!fork()) { // this is the child process
-      close(sockfd); // child doesn't need the listener
-      if (recv(in_sock, buf, BUFSIZE, 0) == -1)
-          perror("recv");
-      else
-        printf("server: recieved '%s'\n", buf);
-      close(in_sock);
-      exit(0);
-  }
-  signal(SIGCHLD, waittokill);
-}
-
-void send_sch(int sockfd, int out_sock, char *buf, int bufsize) {
-  if (!fork()) {
-    close(sockfd);
-    if (send(out_sock, buf, bufsize, 0) == -1) 
-      perror("send");
-    else
-      printf("server: sent message '%s'\n", buf);
-    close(out_sock);
-    exit(0);
-  }
-  signal(SIGCHLD, waittokill);
 }
 
 void hintsInit(struct addrinfo *hints, size_t hintssize) {
@@ -184,18 +112,52 @@ int servInit() {
   return sockfd;
 }
 
-void add_to_pfds(struct pollfd *pfds[], int fd, int *fd_count, int *fd_size) {
-  if (*fd_count == *fd_size) {
-    *fd_size *= 2;
-    *pfds = realloc(*pfds, (*fd_size) * sizeof(**pfds));
-  }
+void SCS_connection(struct pollfd pfds[], int *fd_count, int *fd_size) {
+  struct sockaddr_storage out_addr;
+  socklen_t out_addr_size = sizeof out_addr;
+  int out_sockfd = accept(pfds[0].fd,
+    (struct sockaddr *)&out_addr,
+    &out_addr_size);
 
-  (*pfds)[*fd_count].fd = fd;
-  (*pfds)[*fd_count].events = POLLIN;
-  (*fd_count)++;
+  if (out_sockfd == -1) {
+    perror("accept");
+  } else {
+    add_to_pfds(&pfds, out_sockfd, fd_count, fd_size);
+
+    char s[BUFSIZE];
+    inet_ntop(out_addr.ss_family,
+    get_in_addr((struct sockaddr *)&out_addr),
+    s, sizeof s);
+    printf("server: got connection from %s\n", s);
+  }
 }
 
-void del_from_pfds(struct pollfd pfds[], int i, int *fd_count) {
-  pfds[i] = pfds[*fd_count - 1];
-  (*fd_count)--;
+void SCS_sendall(struct pollfd pfds[], int fd_count, char buf[], int i, int recv_bytes) {
+  for (int j = 0; j < fd_count; j++) {
+    int dest_fd = pfds[j].fd;
+
+    if (dest_fd != pfds[0].fd && pfds[j].fd != pfds[i].fd) {
+      printf("server: sending '%s' to all the hosts\n", buf);
+      if (send(dest_fd, buf, recv_bytes, 0) == -1) {
+        perror("send");
+      }
+    }
+  }
+}
+
+void SCS_recv(struct pollfd pfds[], int *fd_count, int i) {
+  char buf[BUFSIZE];
+  int recv_bytes = recv(pfds[i].fd, buf, BUFSIZE, 0);
+
+  if (recv_bytes <= 0) {
+    if (recv_bytes == 0) {
+      printf("server: connection %d was closed by the client\n", pfds[i].fd);
+    } else {
+      perror("recv");
+    }
+    close(pfds[i].fd);
+    del_from_pfds(pfds, i, fd_count);
+  } else {
+    SCS_sendall(pfds, *fd_count, buf, i, recv_bytes);
+  }
 }
