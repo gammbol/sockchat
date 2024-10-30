@@ -22,6 +22,9 @@ int main(void)
   pfds[0].events = POLLIN;
   fd_count = 1;
 
+  // users database
+  struct udb *head;
+
 
   while (1) {
     int poll_count = poll(pfds, fd_count, -1);
@@ -33,10 +36,10 @@ int main(void)
 
     for (int i = 0; i < fd_count; i++) {
       if (pfds[i].revents & POLLIN) {
-        if (pfds[i].fd == sockfd) {
+        if (pfds[i].fd == pfds[0].fd) {
           SCS_connection(pfds, &fd_count, &fd_size);
         } else {
-          SCS_recv(pfds, &fd_count, i);
+          SCS_recv(pfds, &fd_count, i, &head);
         }
       }
     }
@@ -57,14 +60,16 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-void hintsInit(struct addrinfo *hints, size_t hintssize) {
+void hintsInit(struct addrinfo *hints, size_t hintssize) 
+{
     memset(hints, 0, hintssize);
     hints->ai_family = AF_UNSPEC;
     hints->ai_socktype = SOCK_STREAM;
     hints->ai_flags = AI_PASSIVE;
 }
 
-int servInit() {
+int servInit() 
+{
   int status, sockfd;
   struct addrinfo serv;
   struct addrinfo *servinfo, *p;
@@ -112,7 +117,8 @@ int servInit() {
   return sockfd;
 }
 
-void SCS_connection(struct pollfd pfds[], int *fd_count, int *fd_size) {
+void SCS_connection(struct pollfd pfds[], int *fd_count, int *fd_size) 
+{
   struct sockaddr_storage out_addr;
   socklen_t out_addr_size = sizeof out_addr;
   int out_sockfd = accept(pfds[0].fd,
@@ -132,7 +138,8 @@ void SCS_connection(struct pollfd pfds[], int *fd_count, int *fd_size) {
   }
 }
 
-void SCS_sendall(struct pollfd pfds[], int fd_count, char buf[], int i, int recv_bytes) {
+void SCS_sendall(struct pollfd pfds[], int fd_count, char buf[], int i, int recv_bytes) 
+{
   for (int j = 0; j < fd_count; j++) {
     int dest_fd = pfds[j].fd;
 
@@ -145,7 +152,8 @@ void SCS_sendall(struct pollfd pfds[], int fd_count, char buf[], int i, int recv
   }
 }
 
-void SCS_recv(struct pollfd pfds[], int *fd_count, int i) {
+void SCS_recv(struct pollfd pfds[], int *fd_count, int i, struct udb **head) 
+{
   char buf[BUFSIZE];
   int recv_bytes = recv(pfds[i].fd, buf, BUFSIZE, 0);
 
@@ -158,6 +166,15 @@ void SCS_recv(struct pollfd pfds[], int *fd_count, int i) {
     close(pfds[i].fd);
     del_from_pfds(pfds, i, fd_count);
   } else {
-    SCS_sendall(pfds, *fd_count, buf, i, recv_bytes);
+    // adding a user to the users database
+    if (strcmp(strtok(buf, ":"), "SOCKCHATUSERNAME") == 0) {
+      char *usr = strtok(buf, ":");
+      udb_add(head, usr, pfds[i].fd);
+      printf("Registering user %d as a %s\n", pfds[i].fd, usr);
+    } else {
+      // TODO: redo the sending process
+      // sending the message to all the hosts
+      SCS_sendall(pfds, *fd_count, buf, i, recv_bytes);
+    }
   }
 }
