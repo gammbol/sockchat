@@ -4,19 +4,22 @@ int main(int argc, char *argv[])
 {
   int sockfd, numbytes;  
   struct addrinfo hints;
-  char buf[MAXDATASIZE];
+  char sendto[MAXDATASIZE];
+  char msg[MAXDATASIZE];
+  int isServerPoll;
+  int bufread;
 
   if (argc != 3) {
       fprintf(stderr,"usage: client hostname username\n");
       exit(1);
   }
 
-  sprintf(buf, "SOCKCHATUSERNAME:%s", argv[2]);
+  sprintf(msg, "SOCKCHATUSERNAME:%s", argv[2]);
 
   hintsInit(&hints, sizeof hints);
   sockchatConnect(&sockfd, &hints, argv[1]);
 
-  if (send(sockfd, buf, MAXDATASIZE, 0) == -1) {
+  if (send(sockfd, msg, MAXDATASIZE, 0) == -1) {
     perror("send");
     exit(1);
   } 
@@ -33,11 +36,7 @@ int main(int argc, char *argv[])
   stdinpoll.events = POLLIN;
 
   while (1) {
-    int isServerPoll;
-    int isStdinPoll;
-    int bufread;
-
-    memset(buf, 0, MAXDATASIZE);
+    memset(msg, 0, MAXDATASIZE);
 
     isServerPoll = poll(&serverpoll, 1, -1);
 
@@ -46,33 +45,49 @@ int main(int argc, char *argv[])
     }
 
     if (serverpoll.revents & POLLIN) {
-      numbytes = recv(serverpoll.fd, buf, MAXDATASIZE, 0);
+      numbytes = recv(serverpoll.fd, msg, MAXDATASIZE, 0);
       if (numbytes == -1) {
         perror("recv");
       } else if (numbytes == 0) {
         fprintf(stderr, "client: server has closed the connection\n");
         exit(1);
       } else {
-        printf("client: recieved from server '%s'\n", buf);
+        printf("client: recieved from server '%s'\n", msg);
       }
     } else {
+<<<<<<< HEAD
       printf("enter the message(%s): ", argv[2]);
+=======
+      // entering the message
+      printf("enter the message: ");
+>>>>>>> 646bb1c (refactor client for dialog dev)
       fflush(stdout);
+      if (SCC_poll_stdin(&stdinpoll, msg) != 0)
+        continue;
 
-      isStdinPoll = poll(&stdinpoll, 1, 10000);
-      if (isStdinPoll == 0) {
-        printf("TIME OUT\n");
+      // entering the recipient
+      printf("recipient: ");
+      fflush(stdout);
+      if (SCC_poll_stdin(&stdinpoll, sendto) != 0)
+        continue;
+
+      size_t msglen = strlen(msg);
+      size_t sendtolen = strlen(sendto);
+      if (strlen(msg) == 0 || strlen(sendto) == 0) {
+        fprintf(stderr, "error: message or recipient are empty!");
+        continue;
       } else {
-        bufread = read(0, buf, MAXDATASIZE);
-        buf[bufread-1] = '\0';
-        if (bufread == 0) {
-          fprintf(stderr, "client: error reading input\n");
-        } else {
-          printf("client: sending '%s'\n", buf);
-          if (send(serverpoll.fd, buf, MAXDATASIZE, 0) == -1) {
-            perror("send");
-          }
+        if ((msglen + sendtolen + 1) >= MAXDATASIZE) {
+          size_t offset = MAXDATASIZE - (msglen + sendtolen) + 1;
+          msg[msglen-offset] = '\0';
         }
+        strcat(msg, "\n");
+        strcat(msg, sendto);
+      }
+      
+      printf("client: sending '%s'\n", msg);
+      if (send(serverpoll.fd, msg, MAXDATASIZE, 0) == -1) {
+        perror("send");
       }
     }
   }
@@ -136,4 +151,22 @@ void sockchatConnect(int *sockfd, struct addrinfo *hints, char *remote)
     freeaddrinfo(servinfo);
 }
 
+int SCC_poll_stdin(struct pollfd *stdinpoll, char *buf)
+{
+  int isStdinPoll;
+  int bufread;
 
+  isStdinPoll = poll(stdinpoll, 1, 10000);
+  if (isStdinPoll == 0) {
+    printf("TIME OUT\n");
+    return -1;
+  } else {
+    bufread = read(0, buf, MAXDATASIZE);
+    buf[bufread-1] = '\0';
+    if (bufread == 0) {
+      fprintf(stderr, "client: error reading input\n");
+      return 1;
+    } 
+  }
+  return 0;
+}

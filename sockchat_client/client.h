@@ -26,4 +26,7 @@ void hintsInit(struct addrinfo *hints, size_t hintssize);
 // connecting to the remote host
 void sockchatConnect(int *sockfd, struct addrinfo *hints, char *remote);
 
+// polling the stdin
+int SCC_poll_stdin(struct pollfd *stdinpoll, char *buf);
+
 #endif
