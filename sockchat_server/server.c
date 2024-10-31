@@ -166,13 +166,12 @@ void SCS_recv(struct pollfd pfds[], int *fd_count, int i, struct udb **head)
     close(pfds[i].fd);
     del_from_pfds(pfds, i, fd_count);
   } else {
-    printf("RECIEVED: %s\n", buf);
     // adding a user to the users database
     char *usr = strtok(buf, ":");
     if (strcmp(usr, "SOCKCHATUSERNAME") == 0) {
-      usr = strtok(buf, ":");
+      usr = strtok(NULL, ":");
       udb_add(head, usr, pfds[i].fd);
-      printf("Registering user %d as a %s\n", pfds[i].fd, usr);
+      printf("server: registering user %d as a %s\n", pfds[i].fd, usr);
     } else {
       // TODO: redo the sending process
       // sending the message to all the hosts
