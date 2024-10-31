@@ -23,7 +23,7 @@ int main(void)
   fd_count = 1;
 
   // users database
-  struct udb *head;
+  struct udb *head = NULL;
 
 
   while (1) {
@@ -166,9 +166,11 @@ void SCS_recv(struct pollfd pfds[], int *fd_count, int i, struct udb **head)
     close(pfds[i].fd);
     del_from_pfds(pfds, i, fd_count);
   } else {
+    printf("RECIEVED: %s\n", buf);
     // adding a user to the users database
-    if (strcmp(strtok(buf, ":"), "SOCKCHATUSERNAME") == 0) {
-      char *usr = strtok(buf, ":");
+    char *usr = strtok(buf, ":");
+    if (strcmp(usr, "SOCKCHATUSERNAME") == 0) {
+      usr = strtok(buf, ":");
       udb_add(head, usr, pfds[i].fd);
       printf("Registering user %d as a %s\n", pfds[i].fd, usr);
     } else {
