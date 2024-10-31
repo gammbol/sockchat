@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
         printf("client: recieved from server '%s'\n", buf);
       }
     } else {
-      printf("enter the message: ");
+      printf("enter the message(%s): ", argv[2]);
       fflush(stdout);
 
       isStdinPoll = poll(&stdinpoll, 1, 10000);
