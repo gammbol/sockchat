@@ -6,17 +6,20 @@ int main(int argc, char *argv[])
   struct addrinfo hints;
   char buf[MAXDATASIZE];
 
-
-  if (argc < 2 || argc > 3) {
-      fprintf(stderr,"usage: client hostname [message-to-send]\n");
+  if (argc != 3) {
+      fprintf(stderr,"usage: client hostname username\n");
       exit(1);
   }
 
-  if (argc == 3) 
-    strcpy(buf, argv[2]);
+  sprintf(buf, "SOCKCHATUSERNAME:%s", argv[2]);
 
   hintsInit(&hints, sizeof hints);
   sockchatConnect(&sockfd, &hints, argv[1]);
+
+  if (send(sockfd, buf, MAXDATASIZE, 0) == -1) {
+    perror("send");
+    exit(1);
+  } 
 
   struct pollfd serverpoll;
   struct pollfd stdinpoll;
