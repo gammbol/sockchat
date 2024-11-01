@@ -55,12 +55,8 @@ int main(int argc, char *argv[])
         printf("client: recieved from server '%s'\n", msg);
       }
     } else {
-<<<<<<< HEAD
-      printf("enter the message(%s): ", argv[2]);
-=======
       // entering the message
-      printf("enter the message: ");
->>>>>>> 646bb1c (refactor client for dialog dev)
+      printf("enter the message(%s): ", argv[2]);
       fflush(stdout);
       if (SCC_poll_stdin(&stdinpoll, msg) != 0)
         continue;
