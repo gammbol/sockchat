@@ -1,5 +1,7 @@
 #include "client.h"
 
+// TODO: clean the code
+
 int main(int argc, char *argv[])
 {
   int sockfd, numbytes;  
@@ -7,7 +9,6 @@ int main(int argc, char *argv[])
   char sendto[MAXDATASIZE];
   char msg[MAXDATASIZE];
   int isServerPoll;
-  int bufread;
 
   if (argc != 3) {
       fprintf(stderr,"usage: client hostname username\n");
