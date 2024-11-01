@@ -43,5 +43,6 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
 void SCS_connection(struct pollfd pfds[], int *fd_count, int *fd_size);
 void SCS_sendall(struct pollfd pfds[], int fd_count, char buf[], int i, int recv_bytes);
 void SCS_recv(struct pollfd pfds[], int *fd_count, int i, struct udb **head);
+void SCS_sendto(struct pollfd pfds[], int fd_count, char buf[], struct udb **head);
 
 #endif

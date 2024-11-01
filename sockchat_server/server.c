@@ -1,5 +1,10 @@
 #include "server.h"
 
+#include "../sockchat_client/client.h"
+
+// TODO: clean the code
+// TODO: make the proper protocol
+
 int main(void)
 {
   // server socket 
@@ -171,11 +176,29 @@ void SCS_recv(struct pollfd pfds[], int *fd_count, int i, struct udb **head)
     if (strcmp(usr, "SOCKCHATUSERNAME") == 0) {
       usr = strtok(NULL, ":");
       udb_add(head, usr, pfds[i].fd);
-      printf("server: registering user %d as a %s\n", pfds[i].fd, usr);
+      printf("server: registering user %d as '%s'\n", pfds[i].fd, usr);
     } else {
       // TODO: redo the sending process
       // sending the message to all the hosts
-      SCS_sendall(pfds, *fd_count, buf, i, recv_bytes);
+      // SCS_sendall(pfds, *fd_count, buf, i, recv_bytes);
+      SCS_sendto(pfds, *fd_count, buf, head);
     }
   }
+}
+
+void SCS_sendto(struct pollfd pfds[], int fd_count, char buf[], struct udb **head) {
+  char *msg = strtok(buf, "\n");
+  char *recp = strtok(NULL, "\n");
+
+  struct udb *user = udb_search(*head, recp);
+
+  if (user == NULL) {
+    fprintf(stderr, "error: no user with name %s!\n", recp);
+    return;
+  }
+
+  if (send(user->fd, msg, strlen(msg), 0) == -1) {
+    perror("send");
+  }
+  printf("server: sending '%s' to %s\n", msg, recp);
 }
