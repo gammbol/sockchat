@@ -24,7 +24,6 @@ int main(void)
   }
   printf("Listening on port %s\n", LISTENPORT);
 
-
   // initializing server's listener 
   pfds[0].fd = sockfd;
   pfds[0].events = POLLIN;
@@ -39,13 +38,7 @@ int main(void)
     }
 
     for (int i = 0; i < fd_count; i++) {
-      if (pfds[i].revents & POLLIN) {
-        if (pfds[i].fd == pfds[0].fd) {
-          SCS_connection(pfds, &fd_count, &fd_size);
-        } else {
-          SCS_recv(pfds, &fd_count, i, &head);
-        }
-      }
+      
     }
   }
   return 0;
@@ -178,8 +171,10 @@ void SCS_recv(struct pollfd pfds[], int *fd_count, int i, struct udb **head)
       printf("server: registering user %d as '%s'\n", pfds[i].fd, usr);
     } else {
       // TODO: redo the sending process
+
       // sending the message to all the hosts
       // SCS_sendall(pfds, *fd_count, buf, i, recv_bytes);
+      
       SCS_sendto(pfds, *fd_count, buf, head);
     }
   }
