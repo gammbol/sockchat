@@ -8,6 +8,14 @@ int main(void)
   // server socket 
   int sockfd;
 
+  // initializing pfds
+  int fd_count = 0;
+  int fd_size = FDCOUNTINITSIZE;
+  struct pollfd *pfds = malloc(sizeof *pfds * fd_size);
+
+  // users database
+  struct udb *head = NULL;
+
   // initializing the server
   printf("Starting the server...\n");
   if ((sockfd = servInit()) == -1) {
@@ -16,18 +24,11 @@ int main(void)
   }
   printf("Listening on port %s\n", LISTENPORT);
 
-  int fd_count = 0;
-  int fd_size = FDCOUNTINITSIZE;
-  struct pollfd *pfds = malloc(sizeof *pfds * fd_size);
 
-  // add the listener
+  // initializing server's listener 
   pfds[0].fd = sockfd;
   pfds[0].events = POLLIN;
   fd_count = 1;
-
-  // users database
-  struct udb *head = NULL;
-
 
   while (1) {
     int poll_count = poll(pfds, fd_count, -1);
