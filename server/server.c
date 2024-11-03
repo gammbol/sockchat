@@ -1,7 +1,5 @@
 #include "server.h"
 
-#include "../sockchat_client/client.h"
-
 // TODO: clean the code
 // TODO: make the proper protocol
 
