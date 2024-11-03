@@ -15,5 +15,5 @@ I started this project in order to learn the socket programming, and to see how 
 ## TODO
 - reogranize the server logic
 - redo the users registration process (its kinda dumb at the moment)
-- make a usable interface (it's not quite usable at the moment lol)
+- make a usable interface (it's a total trash at the moment lol)
 
