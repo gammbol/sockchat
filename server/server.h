@@ -24,6 +24,9 @@
 #define BUFSIZE 1024
 #define FDCOUNTINITSIZE 5
 
+// define for unused values
+#define UNUSED(x) (void)(x)
+
 // translation an ip from network to readable form
 void *get_in_addr(struct sockaddr *sa);
 
@@ -43,6 +46,6 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
 void SCS_connection(struct pollfd pfds[], int *fd_count, int *fd_size);
 void SCS_sendall(struct pollfd pfds[], int fd_count, char buf[], int i, int recv_bytes);
 void SCS_recv(struct pollfd pfds[], int *fd_count, int i, struct udb **head);
-void SCS_sendto(struct pollfd pfds[], int fd_count, char buf[], struct udb **head);
+void SCS_sendto(char buf[], struct udb **head);
 
 #endif

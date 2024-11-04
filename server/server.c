@@ -1,6 +1,5 @@
 #include "server.h"
 
-// TODO: clean the code
 // TODO: make the proper protocol
 
 int main(void)
@@ -38,7 +37,13 @@ int main(void)
     }
 
     for (int i = 0; i < fd_count; i++) {
-      
+      if (pfds[i].revents & POLLIN) {
+        if (pfds[i].fd == pfds[0].fd) {
+          SCS_connection(pfds, &fd_count, &fd_size);
+        } else {
+          SCS_recv(pfds, &fd_count, i, &head);
+        }
+      }
     }
   }
   return 0;
@@ -46,6 +51,7 @@ int main(void)
 
 void waittokill(int signum)
 {
+  UNUSED(signum);
   wait(NULL);
 }
 
@@ -175,12 +181,12 @@ void SCS_recv(struct pollfd pfds[], int *fd_count, int i, struct udb **head)
       // sending the message to all the hosts
       // SCS_sendall(pfds, *fd_count, buf, i, recv_bytes);
       
-      SCS_sendto(pfds, *fd_count, buf, head);
+      SCS_sendto(buf, head);
     }
   }
 }
 
-void SCS_sendto(struct pollfd pfds[], int fd_count, char buf[], struct udb **head) {
+void SCS_sendto(char buf[], struct udb **head) {
   char *msg = strtok(buf, "\n");
   char *recp = strtok(NULL, "\n");
 
