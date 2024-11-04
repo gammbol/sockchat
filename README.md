@@ -12,8 +12,17 @@ I started this project in order to learn the socket programming, and to see how 
 - For server: ```./scs```
 - For client: ```./scc server_ip username```
 
+## Protocol
+- Name: SockChatProtocol - scp
+- Version: 0.1
+- Segments:
+    - 1 byte: length
+    - 8 bytes: client username
+    - 8 bytes: server username
+    - (len - 17) bytes: message
+
 ## TODO
-- reogranize the server logic
+- develop a protocol
 - redo the users registration process (its kinda dumb at the moment)
 - make a usable interface (it's a total trash at the moment lol)
 
