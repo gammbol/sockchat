@@ -12,7 +12,7 @@ I started this project in order to learn the socket programming, and to see how 
 - For server: ```./scs```
 - For client: ```./scc server_ip username```
 
-## Protocol
+## Protocol (under development)
 - Name: SockChatProtocol - scp
 - Version: 0.1
 - Segments:
