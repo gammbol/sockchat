@@ -19,9 +19,10 @@ I started this project in order to learn the socket programming, and to see how 
     - 1 byte: length
     - 8 bytes: client username
     - 8 bytes: server username
-    - (len - 17) bytes: message
+    - n bytes: message
 
 ## TODO
+- develop serial package sending
 - develop a protocol
 - redo the users registration process (its kinda dumb at the moment)
 - make a usable interface (it's a total trash at the moment lol)
