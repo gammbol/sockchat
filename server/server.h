@@ -27,6 +27,19 @@
 // define for unused values
 #define UNUSED(x) (void)(x)
 
+// server state struct
+typedef struct servstate {
+  int sockfd;           // server socket file desctiptor
+  int fd_count;         // fd poll count
+  int fd_size;          // fd poll size
+  struct pollfd *pfds;  // fd poll structs
+  struct udb *head;     // user database struct
+} servstate;
+
+// initializing server state struct
+void servStateInit();
+  
+
 // translation an ip from network to readable form
 void *get_in_addr(struct sockaddr *sa);
 
@@ -43,9 +56,9 @@ void add_to_pfds(struct pollfd *pfds[], int fd, int *fd_count, int *fd_size);
 void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
 
 // SCSs
-void SCS_connection(struct pollfd pfds[], int *fd_count, int *fd_size);
-void SCS_sendall(struct pollfd pfds[], int fd_count, char buf[], int i, int recv_bytes);
-void SCS_recv(struct pollfd pfds[], int *fd_count, int i, struct udb **head);
-void SCS_sendto(char buf[], struct udb **head);
+void SCS_connection();
+void SCS_sendall(char buf[], int i, int recv_bytes);
+void SCS_recv(int i);
+void SCS_sendto(char buf[]);
 
 #endif
