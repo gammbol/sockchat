@@ -3,17 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta
-        http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self'"
-        />
-    <meta
         http-equiv="X-Content-Secutiry-Policy"
         content="default-src 'self'; script-src 'self'"
         />
-      <title>hello electron!</title>
+    <title>hello electron!</title>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <h1>Начальник молодец! :)</h1>
-    <p>hello world!</p>
+    <h1 class="header">welcome to sockchat!</h1>
+    <form>
+      <div class="container">
+          <label class="login-label">username:</label>
+          <input type="text" placeholder="username" name="uname" required />
+
+          <label class="login-label">password:</label>
+          <input type="password" placeholder="password" name="upass" required />
+          <input type="submit" class="login-button" value="login"/>
+      </div>
+    </form>
   </body>
 </html>

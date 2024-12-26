@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #2e3944;
+  color: #d3d9d4;
+  font-family: "Exo 2", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  padding: 16px;
+}
+
+.header {
+  text-align: center;
+}
+
+.container {
+  padding: 64px 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-container {
+  border: 1px solid red;
+  min-width: 200px;
+}
+
+.login-label {
+  margin-bottom: 12px;
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  text-align: left;
+}
+
+input[type="text"], input[type="password"] {
+  width: 100%;
+  max-width: 600px;
+  margin: 0;
+  margin-bottom: 32px;
+
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(116, 141, 146, 0.5);
+  height: 22px;
+
+  color: white;
+}
+
+input[type="text"]:focus, input[type="password"]:focus {
+  outline: none;
+  border-bottom: 1px solid, rgba(116, 141, 146, 1);
+  transition: all, 0.5s, ease-out;
+}
+
+.login-button {
+  display: inline-block;
+  padding: 10px 16px;
+  margin: 0 auto;
+  min-width: 150px;
+  color: #d3d9d4;
+  background-color: transparent;
+  border: 2px solid #d3d9d4;
+  border-radius: 10px;
+}
+
