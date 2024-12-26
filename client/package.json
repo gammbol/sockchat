@@ -1,0 +1,23 @@
+{
+  "name": "sockchat-client",
+  "version": "0.0.1",
+  "description": "client side of sockchat",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/gammbol/sockchat.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gammbol/sockchat/issues"
+  },
+  "homepage": "https://github.com/gammbol/sockchat#readme",
+  "devDependencies": {
+    "electron": "^33.2.1"
+  }
+}

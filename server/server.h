@@ -43,17 +43,9 @@ void servStateInit();
 // translation an ip from network to readable form
 void *get_in_addr(struct sockaddr *sa);
 
-// sending and recieving
-void get_sch(int sockfd, int in_sock);
-void send_sch(int sockfd, int out_sock, char *buf, int bufsize);
-
 // inits
 void hintsInit(struct addrinfo *hints, size_t hintssize);
 int servInit();
-
-// pfds
-void add_to_pfds(struct pollfd *pfds[], int fd, int *fd_count, int *fd_size);
-void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
 
 // SCSs
 void SCS_connection();
